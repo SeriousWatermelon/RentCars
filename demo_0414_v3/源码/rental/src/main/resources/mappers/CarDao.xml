@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.work.dao.CarDao">
+
+    <resultMap id="carMap" type="com.work.model.Car">
+        <id property="cid" column="cid"/>
+        <result property="maker" column="maker" />
+        <result property="model" column="model" />
+        <result property="type" column="type" />
+        <result property="productTime" column="product_time" />
+        <result property="rent" column="rent" />
+        <result property="cicon" column="cicon" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="disable" column="disable" />
+        <result property="status" column="status" />
+    </resultMap>
+
+    <select id="findById" parameterType="Integer" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        WHERE c.cid = #{cid}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="findByPage" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="searchByPage" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        WHERE 1=1
+        <if test="maker != null ">
+            and c.maker LIKE CONCAT ('%',#{maker},'%')
+        </if>
+        <if test="model != null">
+            and c.model LIKE CONCAT ('%',#{model},'%')
+        </if>
+        <if test="disable != null">
+            and c.disable = #{disable}
+        </if>
+        <if test="status != null">
+            and c.status = #{status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+
+    <insert id="addCar" parameterType="Car" useGeneratedKeys="true" keyProperty="cid" keyColumn="cid">
+        INSERT INTO car
+        (maker,model,type,product_time,rent,cicon,disable)
+        values
+        (#{maker},#{model},#{type},#{productTime},#{rent},#{cicon},#{disable})
+    </insert>
+
+    <update id="updateCar" parameterType="Car">
+        UPDATE car
+        <trim prefix="set" suffixOverrides=",">
+            <if test="maker != null">maker=#{maker},</if>
+            <if test="model != null">model=#{model},</if>
+            <if test="type != null">type=#{type},</if>
+            <if test="productTime != null">product_time=#{productTime},</if>
+            <if test="rent != null">rent=#{rent},</if>
+            <if test="cicon != null">cicon=#{cicon},</if>
+            <if test="disable != null">disable=#{disable},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+            <if test="status != null">status=#{status},</if>
+        </trim>
+        WHERE cid = #{cid}
+    </update>
+
+
+    <select id="findLocationCar" parameterType="Integer" resultMap="carMap">
+        SELECT c.cid,c.maker,c.model,c.type,c.product_time,c.rent,c.cicon,c.create_time,c.update_time,c.disable,c.status
+        FROM car c
+        INNER JOIN location_car lc on lc.cid = c.cid
+        WHERE c.disable = 0 AND lc.location_id = #{locationId}
+    </select>
+
+
+    <select id="findUserCarsByPage" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        WHERE c.disable=0 and c.status=1
+    </select>
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.work.dao.OrderDao">
+
+    <resultMap id="orderMap" type="com.work.model.Order">
+        <id property="orderId" column="order_id"/>
+        <result property="orderAmount" column="order_amount" />
+        <result property="userId" column="user_id" />
+        <result property="userName" column="user_name" />
+        <result property="userPhone" column="user_phone" />
+        <result property="userAddress" column="user_address" />
+        <result property="carId" column="car_id" />
+        <result property="carMaker" column="car_maker" />
+        <result property="carType" column="car_type" />
+        <result property="pickupLocation" column="pickup_location" />
+        <result property="pickupTime" column="pickup_time" />
+        <result property="dropoffLocation" column="dropoff_location" />
+        <result property="dropoffTime" column="dropoff_time" />
+        <result property="orderStatus" column="order_status" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <select id="findById" parameterType="String" resultMap="orderMap">
+        SELECT o.*
+        FROM orders o
+        WHERE o.order_id = #{orderId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="findOrdersByPage" resultMap="orderMap">
+        SELECT o.*
+        FROM orders o
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="searchOrdersByPage" resultMap="orderMap">
+        SELECT o.*
+        FROM orders o
+        WHERE 1=1
+        <if test="orderId != null ">
+            and o.order_id = #{orderId}
+        </if>
+        <if test="userName != null">
+            and o.user_name = #{userName}
+        </if>
+        <if test="userPhone != null">
+            and o.user_phone = #{userPhone}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <insert id="addOrder" parameterType="Order">
+        INSERT INTO orders (
+        order_id,order_amount,
+        user_id,user_name,user_phone,user_address,
+        car_id,car_maker,car_type,
+        pickup_location,pickup_time,dropoff_location,dropoff_time
+    )
+    VALUES
+    (
+        #{orderId},#{orderAmount},
+        #{userId},#{userName},#{userPhone},#{userAddress},
+        #{carId},#{carMaker},#{carType},
+        #{pickupLocation},#{pickupTime},#{dropoffLocation},#{dropoffTime}
+    );
+    </insert>
+
+    <update id="updateOrder" parameterType="Order">
+        UPDATE orders o
+        <trim prefix="set" suffixOverrides=",">
+            <if test="userId != null">user_id=#{userId},</if>
+            <if test="userName != null">user_name=#{userName},</if>
+            <if test="userPhone != null">user_phone=#{userPhone},</if>
+            <if test="userAddress != null">user_address=#{userAddress},</if>
+            <if test="carId != null">car_id=#{carId},</if>
+            <if test="carMaker != null">car_maker=#{carMaker},</if>
+            <if test="carType != null">car_type=#{carType},</if>
+            <if test="pickupLocation != null">pickup_location=#{pickupLocation},</if>
+            <if test="pickupTime != null">pickup_time=#{pickupTime},</if>
+            <if test="dropoffLocation != null">dropoff_location=#{dropoffLocation},</if>
+            <if test="dropoffTime != null">dropoff_time=#{dropoffTime},</if>
+            <if test="orderStatus != null">order_status=#{orderStatus},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+            <if test="orderAmount != null">order_amount=#{orderAmount},</if>
+        </trim>
+        WHERE o.order_id = #{orderId}
+    </update>
+
+    <update id="cancleOrder" parameterType="String">
+        UPDATE orders o
+        SET o.order_status = 3
+        WHERE o.order_id=#{orderId}
+    </update>
+
+    <select id="findOrdersByUserId" parameterType="Integer" resultMap="orderMap">
+        SELECT o.*
+        FROM orders o
+        WHERE o.user_id=#{id}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="searchUserOrdersByPage" resultMap="orderMap">
+        SELECT o.*
+        FROM orders o
+        WHERE o.user_id=#{userId}
+        <if test="orderId != null ">
+            AND o.order_id = #{orderId}
+        </if>
+        <if test="userName != null">
+            AND o.user_name = #{userName}
+        </if>
+        <if test="userPhone != null">
+            AND o.user_phone = #{userPhone}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+
+</mapper>

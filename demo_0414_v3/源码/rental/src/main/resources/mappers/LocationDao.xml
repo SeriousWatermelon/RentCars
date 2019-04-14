@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.work.dao.LocationDao">
+
+    <resultMap id="locationMap" type="com.work.model.Location">
+        <id property="locationId" column="location_id"/>
+        <result property="latlng" column="latlng" />
+        <result property="locationName" column="location_name" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <collection property="cars" ofType="com.work.model.Car">
+            <id property="cid" column="cid"/>
+            <result property="maker" column="maker" />
+            <result property="model" column="model" />
+            <result property="type" column="type" />
+            <result property="productTime" column="product_time" />
+            <result property="rent" column="rent" />
+            <result property="cicon" column="cicon" />
+            <result property="createTime" column="create_time" />
+            <result property="updateTime" column="update_time" />
+            <result property="disable" column="disable" />
+            <result property="status" column="status" />
+        </collection>
+    </resultMap>
+
+    <select id="findLocationList" resultMap="locationMap">
+        SELECT l.*,c.*
+        FROM location l
+        INNER  JOIN location_car lc on l.location_id = lc.location_id
+        INNER  JOIN car c on lc.cid = c.cid
+        ORDER BY l.create_time DESC
+    </select>
+
+    <select id="findLocationByPage" resultMap="locationMap">
+        SELECT l.*
+        FROM location l
+        ORDER BY l.create_time DESC
+    </select>
+
+    <select id="searchLocationByPage" resultMap="locationMap">
+        SELECT l.*
+        FROM location l
+        WHERE 1=1
+        <if test="locationName != null ">
+            and l.location_name LIKE CONCAT ('%',#{locationName},'%')
+        </if>
+        ORDER BY l.create_time DESC
+    </select>
+
+    <select id="findLocationById" parameterType="Integer" resultMap="locationMap">
+        SELECT l.*
+        FROM location l
+        WHERE l.location_id = #{locationId}
+    </select>
+
+    <update id="updateLocation" parameterType="Location">
+        UPDATE location
+        <trim prefix="set" suffixOverrides=",">
+            <if test="latlng != null">latlng=#{latlng},</if>
+            <if test="locationName != null">location_name=#{locationName},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+        </trim>
+        WHERE location_id = #{locationId}
+    </update>
+
+    <insert id="addLocation" parameterType="Location" useGeneratedKeys="true" keyProperty="locationId" keyColumn="location_id">
+        INSERT INTO location (latlng, location_name)
+        VALUES (#{latlng},#{locationName})
+    </insert>
+
+    <delete id="deleteLocation" parameterType="Integer">
+        DELETE FROM location WHERE location_id = #{locationId}
+    </delete>
+
+
+
+    <delete id="deleteLocationCar" parameterType="Integer">
+        DELETE FROM location_car WHERE location_id = #{locationId}
+    </delete>
+
+    <insert id="addLocationCar">
+        INSERT INTO location_car(location_id,cid) values (#{locationId},#{cid})
+    </insert>
+
+    <update id="updateLocationCar">
+        UPDATE location_car
+        SET cid = #{cid}
+        WHERE location_id = #{locationId}
+    </update>
+
+    <select id="findNoLocationCar" resultType="com.work.model.Car">
+        SELECT c.*
+        FROM car c
+        WHERE c.status = 0 AND c.disable = 0
+        ORDER BY c.create_time DESC
+    </select>
+
+    <update id="updateCarStatus" parameterType="Car">
+        UPDATE car c
+        set c.status = #{status}
+        where c.cid = #{cid}
+    </update>
+
+    <delete id="removeLocationCar">
+        DELETE FROM location_car
+        where location_id=#{locationId} AND cid = #{cid}
+    </delete>
+
+    <select id="findCarsByLocationId" parameterType="Integer">
+        SELECT c.*
+        FROM location_car lc
+        INNER JOIN car c ON lc.cid = c.cid
+        WHERE lc.location_id=#{locationId}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="findLocationByName" resultMap="locationMap">
+        SELECT l.*,c.*
+        FROM location l
+        INNER JOIN location_car lc ON lc.location_id = l.location_id
+        INNER JOIN car c ON c.cid = lc.cid
+        WHERE  l.location_name = #{locationName} AND c.status=1 AND c.disable=0
+    </select>
+
+    <update id="dropCarFromLocation">
+        UPDATE car c
+        SET c.status=0
+        WHERE c.cid IN (
+          SELECT lc.cid FROM location_car lc WHERE lc.location_id=#{locationId}
+        )
+    </update>
+
+</mapper>

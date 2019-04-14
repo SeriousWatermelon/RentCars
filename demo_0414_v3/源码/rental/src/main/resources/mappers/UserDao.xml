@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.work.dao.UserDao">
+
+    <resultMap id="userMap" type="com.work.model.User">
+        <id property="id" column="id"/>
+        <result property="idCard" column="id_card" />
+        <result property="username" column="username" />
+        <result property="password" column="password" />
+        <result property="phone" column="phone" />
+        <result property="credit" column="credit" />
+        <result property="address" column="address" />
+        <result property="isBlacklist" column="is_blacklist" />
+        <result property="createTime" column="create_time" />
+        <result property="lastLoginTime" column="last_login_time" />
+        <collection property="roles" ofType="com.work.model.Role">
+            <id property="rid" column="rid" />
+            <result property="name" column="name" />
+            <collection property="permissions" ofType="com.work.model.Permission">
+                <id property="pid" column="pid" />
+                <result property="name" column="name"/>
+                <result property="url" column="url" />
+            </collection>
+        </collection>
+    </resultMap>
+
+   <select id="findAll" resultMap="userMap">
+        SELECT u.*, r.*
+        FROM user u
+        INNER JOIN user_role ur on ur.uid = u.id
+        INNER JOIN role r on r.rid = ur.rid
+        ORDER BY u.create_time desc
+    </select>
+
+    <select id="findByPage" resultMap="userMap">
+        SELECT u.*, r.*
+        FROM user u
+        INNER JOIN user_role ur on ur.uid = u.id
+        INNER JOIN role r on r.rid = ur.rid
+        ORDER BY u.create_time desc
+    </select>
+
+    <select id="searchByPage" resultMap="userMap">
+        SELECT u.*, r.*
+        FROM user u
+        INNER JOIN user_role ur on ur.uid = u.id
+        INNER JOIN role r on r.rid = ur.rid
+        WHERE 1=1
+        <if test="username != null ">
+            and u.username LIKE CONCAT ('%',#{username},'%')
+        </if>
+        <if test="phone != null">
+            and u.phone LIKE CONCAT ('%',#{phone},'%')
+        </if>
+        ORDER BY u.create_time desc
+    </select>
+
+    <select id="findByUsername" parameterType="string" resultMap="userMap">
+        SELECT u.*, r.*
+        FROM user u
+        INNER JOIN user_role ur on ur.uid = u.id
+        INNER JOIN role r on r.rid = ur.rid
+        WHERE u.username = #{username} AND u.is_blacklist = false
+    </select>
+
+    <select id="findUserById" parameterType="Integer" resultMap="userMap">
+        SELECT u.*, r.*
+        FROM user u
+        INNER JOIN user_role ur on ur.uid = u.id
+        INNER JOIN role r on r.rid = ur.rid
+        WHERE u.id = #{id}
+    </select>
+
+    <update id="updateUser" parameterType="User">
+        UPDATE user
+        <trim prefix="set" suffixOverrides=",">
+            <if test="idCard != null">id_card=#{idCard},</if>
+            <if test="username != null">username=#{username},</if>
+            <if test="password != null">password=#{password},</if>
+            <if test="phone != null">phone=#{phone},</if>
+            <if test="address != null">address=#{address},</if>
+            <if test="credit != null">credit=#{credit},</if>
+            <if test="isBlacklist != null">is_blacklist=#{isBlacklist},</if>
+            <if test="createTime != null">create_time=#{createTime},</if>
+            <if test="lastLoginTime != null">last_login_time=#{lastLoginTime},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="addUser" parameterType="User" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO user
+        (id_card,username,password,phone,address,credit,is_blacklist)
+        values
+        (#{idCard},#{username},#{password},#{phone},#{address},#${credit},#{isBlacklist})
+    </insert>
+
+    <insert id="addUserRole">
+        INSERT INTO user_role(uid,rid) values (#{uid},#{rid})
+    </insert>
+
+    <update id="updateUserRole">
+        UPDATE user_role
+        SET rid = #{rid}
+        WHERE uid = #{uid}
+    </update>
+
+    <select id="findRoleAll" resultType="com.work.model.Role">
+        SELECT r.*
+        FROM role r
+    </select>
+
+
+
+</mapper>
