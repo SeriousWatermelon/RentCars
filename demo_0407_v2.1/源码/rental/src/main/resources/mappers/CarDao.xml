@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.work.dao.CarDao">
+
+    <resultMap id="carMap" type="com.work.model.Car">
+        <id property="cid" column="cid"/>
+        <result property="maker" column="maker" />
+        <result property="model" column="model" />
+        <result property="type" column="type" />
+        <result property="productTime" column="product_time" />
+        <result property="rent" column="rent" />
+        <result property="cicon" column="cicon" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="disable" column="disable" />
+    </resultMap>
+
+    <select id="findById" parameterType="Integer" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        WHERE c.cid = #{cid}
+    </select>
+
+    <select id="findByPage" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+    </select>
+
+    <select id="searchByPage" resultMap="carMap">
+        SELECT c.*
+        FROM car c
+        WHERE 1=1
+        <if test="maker != null ">
+            and c.maker LIKE CONCAT ('%',#{maker},'%')
+        </if>
+        <if test="model != null">
+            and c.model LIKE CONCAT ('%',#{model},'%')
+        </if>
+    </select>
+
+    <insert id="addCar" parameterType="Car" useGeneratedKeys="true" keyProperty="cid" keyColumn="cid">
+        INSERT INTO car
+        (maker,model,type,product_time,rent,cicon,disable)
+        values
+        (#{maker},#{model},#{type},#{productTime},#{rent},#{cicon},#{disable})
+    </insert>
+
+    <update id="updateCar" parameterType="Car">
+        UPDATE car
+        <trim prefix="set" suffixOverrides=",">
+            <if test="maker != null">maker=#{maker},</if>
+            <if test="model != null">model=#{model},</if>
+            <if test="type != null">type=#{type},</if>
+            <if test="productTime != null">product_time=#{productTime},</if>
+            <if test="rent != null">rent=#{rent},</if>
+            <if test="cicon != null">cicon=#{cicon},</if>
+            <if test="disable != null">disable=#{disable},</if>
+            <if test="updateTime != null">update_time=#{updateTime},</if>
+        </trim>
+        WHERE cid = #{cid}
+    </update>
+
+</mapper>
