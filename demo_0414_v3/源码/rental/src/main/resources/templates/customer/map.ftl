@@ -9,7 +9,7 @@
         body { height: 100%; margin: 0px; padding: 0px; }
         #map_canvas { width:70%; height: 80%; margin: 100px auto; }
     </style>
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&key=AIzaSyCxeeU2rsMCYAgZ1__gT3lySlI82hcGha0"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&key=***********"></script>
 </head>
 <body onload="initialize()">
 <div id="map_canvas">
