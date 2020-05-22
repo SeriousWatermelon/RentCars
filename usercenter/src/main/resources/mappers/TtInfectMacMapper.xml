@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ac.ict.mapper.TtInfectMacMapper">
+
+    <select id="listCloseContacts" resultType="cn.ac.ict.dto.TtCloseContactDTO">
+        SELECT a.user_name AS userName, contact_time,times,a.rssi
+        FROM (
+            SELECT t.mac,DATE_FORMAT(t.create_time,'%Y-%m-%d %H:00:00') AS contact_time,IF(t.rssi IS NULL,'-64',t.rssi) AS rssi, suser.user_name,COUNT(t.mac) AS times
+            FROM tt_infect_mac t LEFT JOIN tt_sos_bind bind ON t.mac=bind.mac AND bind.bind_status=1
+            RIGHT JOIN sys_user suser ON bind.user_id=suser.id
+            LEFT JOIN sys_user suser2 ON t.user_id=suser2.id
+            WHERE  suser2.user_name = #{userName}
+            AND t.create_time  BETWEEN #{startTime} AND #{endTime}
+            GROUP BY mac,contact_time
+        )a
+        ORDER BY a.contact_time DESC
+    </select>
+    <!-- 密切接触者查询——时间精确
+        <select id="listCloseContacts" resultType="cn.ac.ict.dto.TtCloseContactDTO">
+            SELECT a.user_name as userName, a.`hour` as contactTime,COUNT(a.mac) AS times,a.rssi
+            FROM (
+                    SELECT t.mac,t.create_time AS hour,IF(t.rssi IS NULL,'-64',t.rssi) AS rssi, suser.user_name,COUNT(t.mac) AS count
+                    FROM tt_infect_mac t LEFT JOIN tt_sos_bind bind ON t.mac=bind.mac AND bind.bind_status=1
+                    RIGHT JOIN sys_user suser ON bind.user_id=suser.id
+                    LEFT JOIN sys_user suser2 ON t.user_id=suser2.id
+                    WHERE  suser2.user_name = #{userName}
+                    AND t.create_time  BETWEEN #{startTime} AND #{endTime}
+                    GROUP BY  mac,HOUR)
+            a GROUP BY a.hour ORDER BY times DESC, a.hour ASC;
+        </select>
+    -->
+
+    <select id="countContactNumber" resultType="java.util.Map">
+        SELECT COUNT(a.`mac`) AS `numbers`, a.`hour`
+        FROM (
+            SELECT mac,DATE_FORMAT( t.create_time, '%Y-%m-%d %H' ) AS `hour`
+            FROM tt_infect_mac t
+            WHERE t.user_id = #{userId}
+            AND t.create_time BETWEEN #{startTime} AND #{endTime}
+            GROUP BY  mac,HOUR
+        ) a
+        GROUP BY a.hour
+        ORDER BY a.hour ASC
+    </select>
+
+    <select id="countByMacGroupHours" resultType="java.util.Map">
+        SELECT tim.create_time as hours, tim.user_id AS userId, count(tim.mac) AS countMacs, tim.mac, tim.rssi
+        FROM tt_infect_mac tim  where tim.create_time = #{contactTime}
+        GROUP BY hours, tim.user_id, tim.mac
+    </select>
+
+</mapper>

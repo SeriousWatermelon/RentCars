@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ac.ict.mapper.SysUserMapper">
+
+    <select id="getUserByPhone" resultType="cn.ac.ict.dto.SysUserDTO">
+        SELECT u.*,
+        (SELECT name FROM sys_organ o WHERE o.id=u.baid) AS baName,
+        (SELECT name FROM sys_organ o WHERE o.id=u.bapid) AS bapName,
+        (SELECT mac FROM tt_sos_bind b where u.id = b.user_id and bind_status = '1') AS mac,
+        (SELECT count(*) FROM sys_user a, sys_user_role b,sys_role c WHERE a.id = b.user_id AND b.role_id = c.id AND c.NAME = '管理员' AND a.id = u.id) AS isAdmin
+        FROM sys_user u
+        WHERE u.phone = #{phone}
+    </select>
+
+    <select id="getUserByUserId" resultType="cn.ac.ict.dto.SysUserDTO">
+        SELECT u.*,
+        (SELECT name FROM sys_organ o WHERE o.id=u.baid) AS baName,
+        (SELECT name FROM sys_organ o WHERE o.id=u.bapid) AS bapName,
+        (SELECT mac FROM tt_sos_bind b where u.id = b.user_id and bind_status = '1') AS mac,
+        (SELECT count(*) FROM sys_user a, sys_user_role b,sys_role c WHERE a.id = b.user_id AND b.role_id = c.id AND c.NAME = '管理员' AND a.id = u.id) AS isAdmin
+        FROM sys_user u
+        WHERE u.id = #{userId}
+    </select>
+
+    <select id="listUserByBaIdAndUserName" resultType="cn.ac.ict.dto.SysUserDTO">
+        SELECT u.*,
+        (SELECT name FROM sys_organ o WHERE o.id=u.baid) AS baName,
+        (SELECT name FROM sys_organ o WHERE o.id=u.bapid) AS bapName,
+        (SELECT mac FROM tt_sos_bind b where u.id = b.user_id and bind_status = '1') AS mac,
+        (SELECT count(*) FROM sys_user a, sys_user_role b,sys_role c WHERE a.id = b.user_id AND b.role_id = c.id AND c.NAME = '管理员' AND a.id = u.id) AS isAdmin
+        FROM sys_user u
+        WHERE 1=1
+        <if test="baId != null and baId != '' ">
+            AND u.baid = #{baId}
+        </if>
+        <if test="userName != null and userName != '' ">
+            AND u.user_name=#{userName}
+        </if>
+    </select>
+
+</mapper>

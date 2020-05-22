@@ -1,0 +1,15 @@
+# 部署切 pro, 开发切 dev
+spring:
+  profiles:
+    active: dev
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  resources:
+#    static-locations: classpath:/static/
+
+server:
+  servlet:
+    context-path: /sosms

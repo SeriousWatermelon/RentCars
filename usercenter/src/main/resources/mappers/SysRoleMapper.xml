@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ac.ict.mapper.SysRoleMapper">
+
+    <select id="listRoleByUserId" resultType="cn.ac.ict.entity.SysRoleEntity">
+		SELECT sr.id,sr.name,sr.code,sr.status
+        FROM sys_user su LEFT JOIN sys_user_role sur ON su.id=sur.user_id
+        LEFT JOIN sys_role sr ON sur.role_id=sr.id
+        WHERE sr.status=#{status} AND su.id=#{userId}
+	</select>
+
+</mapper>

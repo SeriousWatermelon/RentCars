@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ac.ict.mapper.TtHourMacMapper">
+
+    <select id="countBetweenContactTime" resultType="java.util.Map">
+        SELECT thm.user_id AS userId,thm.mac,suser.baid AS baId,thm.contact_time AS contactTime,
+	        (SELECT tt.user_id FROM tt_sos_bind tt WHERE tt.mac = thm.mac and tt.bind_status='1' ) AS targetId
+        FROM tt_hour_mac thm LEFT JOIN sys_user suser ON thm.user_id=suser.id
+        WHERE thm.contact_time BETWEEN #{startTime} AND #{endTime}
+    </select>
+
+</mapper>

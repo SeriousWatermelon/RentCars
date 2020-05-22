@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ac.ict.mapper.TtContactMapMapper">
+
+    <update id="updateInfectedQuarantineByUserId">
+        UPDATE tt_contact_map
+        <set>
+            <if test="flag==0">
+                infected=#{updateStatus}
+            </if>
+            <if test="flag==1">
+                quarantine=#{updateStatus}
+            </if>
+        </set>
+        WHERE user_id=#{userId}
+    </update>
+
+    <select id="listUserByCondition" resultType="cn.ac.ict.dto.TtContactMapRespDTO">
+        SELECT organ.name AS 'baName',map.user_id AS 'userId',suser.user_name AS 'userName',map.quarantine AS
+        'quarantine',map.infected AS 'infected'
+        FROM tt_contact_map map LEFT JOIN sys_organ organ ON map.ba_id=organ.id
+        LEFT JOIN sys_user suser ON map.user_id=suser.id
+        WHERE 1=1 AND organ.id IS NOT NULL AND suser.id IS NOT NULL
+        <if test="baId != null">
+            AND map.ba_id=#{baId}
+        </if>
+        <if test="userName != null">
+            AND suser.user_name LIKE CONCAT ('%',#{userName},'%')
+        </if>
+        <if test="quarantine != 2">
+            AND map.quarantine=#{quarantine}
+        </if>
+        <if test="infected != 2">
+            AND map.infected=#{infected}
+        </if>
+        GROUP BY map.user_id
+    </select>
+
+    <select id="getContactNet" resultType="cn.ac.ict.dto.TtContactMapDTO">
+        SELECT tcm.user_id,suser.user_name,tcm.quarantine,tcm.infected,tcm.target_id,suser2.user_name AS 'target_name',
+        (SELECT quarantine FROM tt_contact_map tcm2 WHERE tcm.target_id = tcm2.user_id  LIMIT 1) AS 'target_quarantine',
+        (SELECT infected FROM tt_contact_map tcm3 WHERE tcm.target_id = tcm3.user_id LIMIT 1) AS 'target_infected'
+        FROM tt_contact_map tcm INNER JOIN sys_user suser ON tcm.user_id=suser.id
+        INNER JOIN sys_user suser2 ON tcm.target_id=suser2.id
+        WHERE tcm.contact_time BETWEEN #{startDate} AND #{endDate}
+        <if test="baId != null and baId != '' ">
+            AND tcm.ba_id=#{baId}
+        </if>
+        ORDER BY suser.user_name ASC
+    </select>
+
+    <select id="listContactNet" resultType="cn.ac.ict.dto.TtContactMapNetDTO">
+        SELECT su.id AS 'user_id',su.user_name AS 'user_name',
+            tcm.target_id,su2.user_name AS 'target_name',
+            tcm.contact_time,thm.contact_number AS 'contact_frequency',thm.rssi
+        FROM tt_contact_map tcm INNER JOIN tt_hour_mac thm ON tcm.user_id=thm.user_id AND tcm.mac=thm.mac AND tcm.contact_time=thm.contact_time
+        INNER JOIN sys_user su ON tcm.user_id=su.id
+        INNER JOIN sys_user su2 ON tcm.target_id=su2.id
+        WHERE tcm.contact_time BETWEEN #{startDate} AND #{endDate}
+        AND tcm.user_id=#{userId}
+        GROUP BY tcm.target_id
+        ORDER BY tcm.contact_time ASC
+    </select>
+
+</mapper>
